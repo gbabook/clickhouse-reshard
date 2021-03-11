@@ -66,25 +66,25 @@ ENGINE = Distributed('cluster_2s_1r', 'local', 'cs_100_1', rand())
 
 在 node-2 的 clickhouse-client 中执行：
 ```SQL
-INSERT INTO local.cs_100_1 SELECT * FROM default.cs_100_1 WHERE (toSecond(time) % 2) != 0
+INSERT INTO local.cs_100_1 SELECT * FROM default.cs_100_1 WHERE (toSecond(time) % 2) = 0
 ```
 `node-2` 上面的 `default.cs_100_1` 是分布式表，数据源就只有 `node-1`
 
 `toSecond` 函数会把时间字段转化为以秒为单位的数字，范围是 0-59。
 
-很显然，切割的逻辑很简单粗暴：node-1 保存秒数是偶数的数据，node-2 保存秒数是奇数的数据。
+很显然，切割的逻辑很简单粗暴：node-1 保存秒数是奇数的数据，node-2 保存秒数是偶数的数据。
 
 处理很快，单机 cs_100_1 数据接近一亿，十秒不到就完成了（当然了，这是在我本地模拟的两台 ck，CPU、内存容量、硬盘都还不错）。
 
-完成之后就要把 node-1 的 cs_100_1 表中，时间是奇数秒的数据给删了：
+完成之后就要把 node-1 的 cs_100_1 表中，时间是偶数秒的数据给删了：
 
 在 node-2 的 clickhouse-client 中执行，直接操作分布式表：
 ```SQL
-ALTER TABLE default.cs_100_1 DELETE WHERE (toSecond(time) % 2) != 0
+ALTER TABLE default.cs_100_1 DELETE WHERE (toSecond(time) % 2) = 0
 ```
 因为是 ck 的删除是异步操作，立即就会返回完成，所以别忘了适时检查下是不是删除都完成了。
 ```SQL
-SELECT COUNT(*) FROM default.cs_100_1 WHERE (toSecond(time) % 2) != 0;
+SELECT COUNT(*) FROM default.cs_100_1 WHERE (toSecond(time) % 2) = 0;
 ```
 
 至此 node-1 单机的 local.cs_100_1 表数据就还算平均地分到 node-2 上了。
