@@ -19,7 +19,7 @@ INSERT INTO default_new.cs_100_1 SELECT * FROM default.cs_100_1
 
 以下是我的思路，供参考：
 
-*PS：副本是另一个方向，是 ck 和 zookeeper 交互的事情，故以下不会提到副本。*
+*PS：副本是另一个方向，ck 和 zookeeper 交互后会自动同步，故以下不会提到副本。*
 
 单分片转 2 分片
 ----------
