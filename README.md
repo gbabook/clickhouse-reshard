@@ -34,7 +34,7 @@ Clickhouse 增加分片后，官方文档建议把新分片的权重设大。这
     </cluster_2s_1r>
 </remote_servers>
 ```
-目前这个所谓的集群，暂时就只有 node-1 自己，目的是在 node-2 通过分布式表从网络上直接读取 node-1 的数据。
+目前这个所谓的集群，暂时就只有 node-1 自己，目的是 node-2 可以通过分布式表直接读取 node-1 的数据。
 
 接下来在 node-2 的 default 数据库建立分布式表：
 ```SQL
