@@ -48,9 +48,9 @@ ENGINE = Distributed('cluster_2s_1r', 'local', 'cs_100_1', rand())
 
 第三个参数：`cs_100_1` 是对应 `local` 库本地表的表名。
 
-*PS：保存到 ck 的数据，大部分都是事件日志，都会有时间字段，拆分数据就依靠这个字段。*
-
 准备工作完毕，接下来就开始把 node-1 的数据尽量平分到 node-2：
+
+*PS：保存到 ck 的数据，大部分都是事件日志，都会有时间字段，拆分数据就依靠这个字段。*
 
 在 node-2 的 clickhouse-client 中执行：
 ```SQL
