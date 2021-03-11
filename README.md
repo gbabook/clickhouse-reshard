@@ -106,7 +106,8 @@ INSERT INTO local.cs_100_1 SELECT * FROM default.cs_100_1 WHERE toSecond(time) I
 还继续加机器，就不用再说了吧。
 
 
-3 分片转 2 分片
+
+减少分片
 ----------
 运维过程中各种情况都会遇到，机器弄多了资源有富余，要下架机器。
 
