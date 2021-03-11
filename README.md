@@ -58,7 +58,7 @@ ENGINE = Distributed('cluster_2s_1r', 'local', 'cs_100_1', rand())
 
 第二个参数：`local` 是本机本地数据库名；
 
-第三个参数：`cs_100_1` 是对应 `local` 库本地表的表名。
+第三个参数：`cs_100_1`，结合参数二，表示此表映射 `local.cs_100_1`。
 
 准备工作完毕，接下来就开始把 node-1 的数据尽量平分到 node-2：
 
