@@ -48,7 +48,7 @@ ENGINE = Distributed('cluster_2s_1r', 'local', 'cs_100_1', rand())
 
 第三个参数：`cs_100_1` 是对应 `local` 库本地表的表名。
 
-*PS：ck 每张表的数据，大部分都是事件日志，都会有时间字段，拆分数据就依靠这个字段。*
+*PS：保存到 ck 的数据，大部分都是事件日志，都会有时间字段，拆分数据就依靠这个字段。*
 
 准备工作完毕，接下来就开始把 node-1 的数据尽量平分到 node-2：
 
@@ -66,13 +66,13 @@ INSERT INTO local.cs_100_1 SELECT * FROM default.cs_100_1 WHERE (toSecond(time) 
 
 完成之后就要把 node-1 的 cs_100_1 表中，时间是奇数秒的数据给删了：
 
-在 node-1 的 clickhouse-client 中执行
+在 node-2 的 clickhouse-client 中执行，直接操作分布式表：
 ```SQL
-ALTER TABLE local.cs_100_1 DELETE WHERE (toSecond(time) % 2) != 0
+ALTER TABLE default.cs_100_1 DELETE WHERE (toSecond(time) % 2) != 0
 ```
 因为是 ck 的删除是异步操作，立即就会返回完成，所以别忘了适时检查下是不是删除都完成了。
 ```SQL
-SELECT COUNT(*) FROM local.cs_100_1 WHERE (toSecond(time) % 2) != 0;
+SELECT COUNT(*) FROM default.cs_100_1 WHERE (toSecond(time) % 2) != 0;
 ```
 
 至此 node-1 单机的 local.cs_100_1 表数据就还算平均地分到 node-2 上了。
@@ -81,4 +81,33 @@ SELECT COUNT(*) FROM local.cs_100_1 WHERE (toSecond(time) % 2) != 0;
 
 同样 node-1 的 default 库也建立好分布式表，完成之后两台机器就可以随意挑一台来用了。
 
+
+2 分片转 3 分片
+----------
+先看一下两台 ck 的本地表，时间字段的秒数有哪些：
+```SQL
+SELECT toSecond(time) AS seconds FROM local.cs_100_1 GROUP BY seconds;
+```
+假设原来的 node-1、node-2 数据比较平均，都是 30 条数据。
+
+那么现在就可以分别在 node-1、node-2 随机取 10 条秒数数据，放到 node-3：
+
+通过上面的方法，在 node-3 的 clickhouse-client 中执行：
+```SQL
+INSERT INTO local.cs_100_1 SELECT * FROM default.cs_100_1 WHERE toSecond(time) IN (35,27,3,55,43,21,45,47,59,31,16,0,14,18,42,30,6,36,54,20)
+```
+接下来仍然同样的操作。
+
+最终完成之后看了下，数据还算平均。
+
+
+3 分片转 4 分片
+----------
+还继续加机器，就不用再说了吧。
+
+
+3 分片转 2 分片
+----------
+运维过程中各种情况都会遇到，机器弄多了资源有富余，要下架机器。
+减少分片就方便多了，把要下架的机器脱离集群，再直接把本地数据写入分布式表，如果分布式表第四个参数是`rand()`的话，就会很平均的分配过去了。
 
